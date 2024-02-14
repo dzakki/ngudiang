@@ -64,8 +64,8 @@ export default function LoginContainer() {
   }, [error]);
 
   return (
-    <div className='lg:m-auto my-auto max-md:px-5'>
-      <div className='bg-white shadow lg:w-[400px] w-full py-10 max-md:py-8 px-8 max-md:px-6 rounded-xl'>
+    <div className='md:m-auto my-auto max-md:px-5'>
+      <div className='bg-white shadow md:w-[400px] w-full py-10 max-md:py-8 px-8 max-md:px-6 rounded-xl'>
         <div className='mb-4'>
           <h1 className='text-3xl font-bold text-center text-blue-950'>Ngudiang</h1>
           <h5 className='text-base text-center font-semibold mt-4 text-blue-950'>Login to Ngudiang</h5>
