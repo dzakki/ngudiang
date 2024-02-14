@@ -1,4 +1,6 @@
 import React from 'react';
+import { Droppable } from 'react-beautiful-dnd';
+
 import { Button } from '~/components/Button';
 import CardTicket from './CardTicket';
 import { useUpdateStatus } from '~/hooks/useControllerTicket';
@@ -12,25 +14,12 @@ interface ListTicketProps {
 
 export default function ListTicket({ ticketByStatus }: ListTicketProps) {
   const [isAdding, setIsAdding] = React.useState(false);
-  const { mutate: updateStatusTicket, isLoading } = useUpdateStatus();
+  const { isLoading } = useUpdateStatus();
 
   const { status, tickets } = ticketByStatus;
 
   return (
-    <li
-      className='max-h-full px-2 scroll-smooth'
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => {
-        e.preventDefault();
-        if (!tickets.length) {
-          const dataTransfer = e.dataTransfer.getData('text');
-          if (dataTransfer) {
-            const parsedDataTransfer = JSON.parse(dataTransfer);
-            updateStatusTicket(parsedDataTransfer, status, 0);
-          }
-        }
-      }}
-    >
+    <li className='max-h-full px-2 scroll-smooth'>
       <div className='bg-gray-200 max-h-full w-[272px] rounded-xl shadow-md relative box-border align-top px-1.5 flex flex-col'>
         <div className='px-2 pt-2'>
           <div className='min-h-5 flex flex-row items-center'>
@@ -42,38 +31,32 @@ export default function ListTicket({ ticketByStatus }: ListTicketProps) {
             <h2 className='block text-sm font-semibold leading-5 px-2 py-1.5'>{status}</h2>
           </div>
         </div>
-        <ol className='py-1 px-0.5 h-full overflow-x-hidden overflow-y-auto z-[1] flex flex-col flex-auto'>
-          {tickets.map((ticket) => (
-            <>
-              <CardTicket
-                ticket={ticket}
-                containerProps={{
-                  onDragStart(e) {
-                    e.dataTransfer.setData('text', JSON.stringify(ticket));
-                  },
-                  onDragOver(e) {
-                    e.preventDefault();
-                  },
-                  onDrop(e) {
-                    e.preventDefault();
-                    const dataTransfer = e.dataTransfer.getData('text');
-                    if (dataTransfer) {
-                      const parsedDataTransfer = JSON.parse(dataTransfer);
-                      const indexOfTicket = tickets.findIndex((_ticket) => _ticket.id === ticket.id);
-                      updateStatusTicket(parsedDataTransfer, status, indexOfTicket >= 0 ? indexOfTicket : 0);
-                    }
-                  },
-                  draggable: status !== 'Completed',
-                }}
+        <Droppable
+          droppableId={status}
+          type='TICKET'
+        >
+          {(dropProvided) => (
+            <ol
+              className='py-1 px-0.5 h-full overflow-x-hidden overflow-y-auto z-[1] flex flex-col flex-auto'
+              {...dropProvided.droppableProps}
+              ref={dropProvided.innerRef}
+            >
+              {tickets.map((ticket, index) => (
+                <CardTicket
+                  key={ticket.id}
+                  ticket={ticket}
+                  index={index}
+                />
+              ))}
+              <FormAddTicket
+                isVisible={isAdding}
+                status={status}
+                setIsVisible={(val) => setIsAdding(val)}
               />
-            </>
-          ))}
-          <FormAddTicket
-            isVisible={isAdding}
-            status={status}
-            setIsVisible={(val) => setIsAdding(val)}
-          />
-        </ol>
+              {dropProvided.placeholder}
+            </ol>
+          )}
+        </Droppable>
         {!isAdding && (
           <div className='p-2'>
             <Button

@@ -2,7 +2,7 @@ import { useNavigate, useParams } from '@remix-run/react';
 import clsx from 'clsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TextArea } from '~/components/TextArea';
-import useControllerData from '~/hooks/useControllerTicket';
+import { useUpdateTitleTicket } from '~/hooks/useControllerTicket';
 import { useDebouncedCallback } from '~/hooks/useDebouncedCallback';
 
 interface TitleTicketProps {
@@ -18,7 +18,7 @@ export default function TitleTicket({ defaultTitle }: TitleTicketProps) {
   const params = useParams();
   const ticketId = params['ticketId'];
 
-  const { updateTitleTicket } = useControllerData();
+  const { mutate: updateTitleTicket } = useUpdateTitleTicket();
 
   const setTitleTicketStore = useDebouncedCallback(
     useCallback(

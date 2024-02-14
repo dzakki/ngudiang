@@ -3,7 +3,7 @@ import { useNavigate, useParams } from '@remix-run/react';
 import { useEffect, useRef } from 'react';
 import Description from './components/Description';
 import TitleTicket from './components/TitleTicket';
-import useControllerData from '~/hooks/useControllerTicket';
+import { useGetTicketById } from '~/hooks/useControllerTicket';
 import Status from './components/Status';
 import dayjs from 'dayjs';
 
@@ -12,7 +12,8 @@ export default function TicketDetailContainer() {
   const dialogContentRef = useRef<HTMLDivElement>(null);
 
   const params = useParams();
-  const { getTicketById } = useControllerData();
+  const { fetchSync } = useGetTicketById();
+  
   const ticketId = params['ticketId'];
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function TicketDetailContainer() {
     return () => document.removeEventListener('click', onClick);
   }, [navigate]);
 
-  const ticket = getTicketById(Number(ticketId));
+  const ticket = fetchSync(Number(ticketId));
 
   if (Object.keys(ticket ?? {}).length === 0) {
     return null;

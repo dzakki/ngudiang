@@ -150,56 +150,20 @@ export const useUpdateStatus = () => {
   };
 };
 
-export default function useControllerData() {
-  const { store, setStore } = useStoreData();
-
-  const getTicketById = useCallback(
-    (id: number) => {
-      return store?.flatMap((taskByStatus) => taskByStatus.tickets).find((ticket) => ticket.id === id);
-    },
-    [store]
-  );
+export const useUpdateSequence = () => {
+  const { setStore } = useStoreData();
 
   return {
-    addTicket: useCallback(
-      (ticket: Ticket) => {
+    mutate: useCallback(
+      (status: string, fromSequence: number, toSequence: number) => {
         setStore?.((prev) => {
           return [...prev].map((taskByStatus) => {
-            const tickets = [...taskByStatus.tickets];
-            if (ticket.status === taskByStatus.status) {
-              tickets.unshift(ticket);
-            }
-            return {
-              ...taskByStatus,
-              tickets,
-            };
-          });
-        });
-      },
-      [setStore]
-    ),
-    updateStatusTicket: useCallback(
-      (ticket: Ticket, toStatus: string, sequence?: number) => {
-        setStore?.((prev) => {
-          return [...prev].map((taskByStatus) => {
-            if (ticket.status === 'Completed') {
-              return taskByStatus;
-            } else if (taskByStatus.status === toStatus) {
+            if (taskByStatus.status === status) {
               const tickets = [...taskByStatus.tickets];
-
-              tickets.splice(sequence ?? 0, 0, {
-                ...ticket,
-                status: toStatus,
-              });
-
+              tickets.splice(toSequence, 0, tickets.splice(fromSequence, 1)[0]);
               return {
                 ...taskByStatus,
                 tickets,
-              };
-            } else if (ticket.status === taskByStatus.status) {
-              return {
-                ...taskByStatus,
-                tickets: taskByStatus.tickets.filter((_ticket) => _ticket.id !== ticket.id),
               };
             }
             return taskByStatus;
@@ -208,8 +172,14 @@ export default function useControllerData() {
       },
       [setStore]
     ),
-    getTicketById,
-    updateTitleTicket: useCallback(
+  };
+};
+
+export const useUpdateTitleTicket = () => {
+  const { setStore } = useStoreData();
+  const { fetchSync: getTicketById } = useGetTicketById();
+  return {
+    mutate: useCallback(
       (title: string, id: number) => {
         const currentTicket = getTicketById(id);
         if (currentTicket) {
@@ -234,33 +204,6 @@ export default function useControllerData() {
       },
       [getTicketById, setStore]
     ),
-    updateContentTicket: useCallback(
-      (content: string, id: number) => {
-        const currentTicket = getTicketById(id);
-        if (currentTicket) {
-          const updatedTicket = {
-            ...currentTicket,
-            content,
-          };
-          setStore?.((prev) => {
-            return [...prev].map((taskByStatus) => {
-              return {
-                ...taskByStatus,
-                tickets: taskByStatus.tickets.map((ticket) => {
-                  if (ticket.id === id) {
-                    return updatedTicket;
-                  }
-                  return ticket;
-                }),
-              };
-            });
-          });
-        }
-      },
-      [getTicketById, setStore]
-    ),
-    setStore,
-    store,
   };
-}
+};
 

@@ -1,11 +1,12 @@
 import { Outlet, useLoaderData } from '@remix-run/react';
 import { useEffect } from 'react';
-import useControllerData from '~/hooks/useControllerTicket';
+import { DragDropContext, DropResult } from 'react-beautiful-dnd';
+import { useUpdateSequence, useUpdateStatus } from '~/hooks/useControllerTicket';
 import ListTicket from './components/ListTicket';
 import { ActionFunctionArgs, LoaderFunctionArgs, json, redirect } from '@remix-run/node';
 import { destroySession, getSession } from '~/session';
 import { ticketByStatuses } from '~/models/ticket';
-
+import { useStoreData } from '~/hooks/useStoreTicket';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get('Cookie'));
@@ -28,7 +29,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function MainContainers() {
   const data = useLoaderData<typeof loader>();
-  const { store, setStore } = useControllerData();
+  const { store, setStore } = useStoreData();
+  const updateStatusTicket = useUpdateStatus();
+  const updateSequence = useUpdateSequence();
 
   useEffect(() => {
     if (data) {
@@ -36,17 +39,38 @@ export default function MainContainers() {
     }
   }, [data, setStore]);
 
+  const handleOnDragEnd = (result: DropResult, _) => {
+    if (result.type === 'TICKET' && result.destination) {
+      const destinationIdx = result.destination.index;
+      const destinationStatus = result.destination.droppableId;
+      const sourceIdx = result.source.index;
+      const status = result.source.droppableId;
+
+      if (status !== destinationStatus) {
+        const ticketStatus = store?.filter((ticketByStatus) => ticketByStatus.status === status)?.[0];
+        if (ticketStatus) {
+          const selectedTicket = ticketStatus.tickets[sourceIdx];
+          updateStatusTicket.mutate(selectedTicket, destinationStatus, destinationIdx);
+        }
+      } else {
+        updateSequence.mutate(status, sourceIdx, destinationIdx);
+      }
+    }
+  };
+
   return (
     <>
       <div className='w-screen h-screen relative'>
-        <ol className='flex flex-row w-full h-full fixed bg-sky-600 p-6 overflow-x-scroll'>
-          {store?.map((ticketByStatus) => (
-            <ListTicket
-              key={ticketByStatus.status}
-              ticketByStatus={ticketByStatus}
-            />
-          ))}
-        </ol>
+        <DragDropContext onDragEnd={handleOnDragEnd}>
+          <ol className='flex flex-row w-full h-full fixed bg-sky-600 p-6 overflow-x-scroll'>
+            {store?.map((ticketByStatus) => (
+              <ListTicket
+                key={ticketByStatus.status}
+                ticketByStatus={ticketByStatus}
+              />
+            ))}
+          </ol>
+        </DragDropContext>
 
         <form method='post'>
           <button
