@@ -2,11 +2,14 @@
 
 - [Remix Docs](https://remix.run/docs)
 
-## Development
+## How to run in local
+
+your node must be > 18.0.0
 
 From your terminal:
 
 ```sh
+npm i
 npm run dev
 ```
 
