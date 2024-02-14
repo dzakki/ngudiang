@@ -12,7 +12,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get('Cookie'));
 
   if (!session.get('isLoggedIn')) {
-    return redirect('/auth/login');
+    return redirect('/login');
   }
 
   return json({ ticketByStatuses });
@@ -20,7 +20,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await getSession(request.headers.get('Cookie'));
-  return redirect('/auth/login', {
+  return redirect('/login', {
     headers: {
       'Set-Cookie': await destroySession(session),
     },

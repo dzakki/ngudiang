@@ -43,7 +43,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   session.flash('error', 'Invalid email/password');
 
-  return redirect('/auth/login', {
+  return redirect('/login', {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
