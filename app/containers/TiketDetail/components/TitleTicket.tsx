@@ -57,7 +57,7 @@ export default function TitleTicket({ defaultTitle }: TitleTicketProps) {
   return (
     <div className='mr-8'>
       <h2
-        className={clsx('font-semibold text-xl text-blue-950', isActive && 'hidden')}
+        className={clsx('font-semibold text-xl text-blue-950 cursor-pointer', isActive && 'hidden')}
         onClick={() => setIsActive(true)}
         aria-hidden
       >
